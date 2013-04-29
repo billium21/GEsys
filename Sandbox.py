@@ -36,7 +36,7 @@ class ReportParser(HTMLParser):
 
 #mail server fetching
 mail = imaplib.IMAP4_SSL("10.154.128.22") #Establishes Exchange server connection
-mail.login("wmoylan", "MST@42kQsT")
+mail.login("wmoylan", "password")
 mail.select("inbox")
 typ, data = mail.search(None, '(From "Thomas Alberi")')
 mailList = data[0]
