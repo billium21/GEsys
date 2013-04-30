@@ -11,20 +11,21 @@ count = 0
 
 
 def convert(data):
-    num = 0
-    result = ""
-    if data.rfind("TB") > -1:
+    if 'TB' in data:
         num = float(data.strip("TB,"))
         num = round((num * 1024), 3)
-        result = str(num) + " GB,"
-    elif data.rfind("MB") > -1:
-        print data
+        return str(num) + ","
+    elif 'MB' in data:
+        #print data
         num = float(data.strip("MB,"))
         num = round((num / 1024), 3)
-        result = str(num) + " GB,"
+        return str(num) + ","
+    elif 'GB' in data:
+        num = float(data.strip("GB,"))
+        num = round(num, 3)
+        return str(num) + ","
     else:
         return data
-    return result
 
 
 class ReportParser(HTMLParser):
