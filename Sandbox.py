@@ -12,13 +12,13 @@ def convert(data):
     result = ""
     if data.rfind("TB") > -1:
         num = float(data.strip("TB,"))
-        num = num * 1024
-        result = str(num) + "GB,"
+        num = round((num * 1024), 3)
+        result = str(num) + " GB,"
     elif data.rfind("MB") > -1:
         print data
         num = float(data.strip("MB,"))
-        num = num/1024  #these numbers can get long. Shall I round them?
-        result = str(num) + "GB,"
+        num = round((num/1024), 3)
+        result = str(num) + " GB,"
     else: return data
     return result
 
