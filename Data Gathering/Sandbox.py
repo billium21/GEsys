@@ -7,6 +7,21 @@ d = []
 lineCount = 0
 count = 0
 
+def convert(data):
+    num = 0
+    result = ""
+    if data.rfind("TB") > -1:
+        num = float(data.strip("TB,"))
+        num = round((num * 1024), 3)
+        result = str(num) + " GB,"
+    elif data.rfind("MB") > -1:
+        print data
+        num = float(data.strip("MB,"))
+        num = round((num/1024), 3)
+        result = str(num) + " GB,"
+    else: return data
+    return result
+
 #Report parser: HTMLParser with a few overridden handlers
 class ReportParser(HTMLParser):
     def handle_data(self, data):
@@ -30,13 +45,13 @@ class ReportParser(HTMLParser):
             else:
                 output += ","
                 count += 1
-                r.write(output)
+                r.write(convert(output))
 
     
 
 #mail server fetching
 mail = imaplib.IMAP4_SSL("10.154.128.22") #Establishes Exchange server connection
-mail.login("wmoylan", "password")
+mail.login("wmoylan", "MST@42kQsT")
 mail.select("inbox")
 typ, data = mail.search(None, '(From "Thomas Alberi")')
 mailList = data[0]
