@@ -1,11 +1,14 @@
 #Sandbox Python Script. Play with Python
 
-import os, zipfile, imaplib, email, string
+import zipfile
+import imaplib
+import email
 from HTMLParser import HTMLParser
 
 d = []
 lineCount = 0
 count = 0
+
 
 def convert(data):
     num = 0
@@ -17,18 +20,25 @@ def convert(data):
     elif data.rfind("MB") > -1:
         print data
         num = float(data.strip("MB,"))
-        num = round((num/1024), 3)
+        num = round((num / 1024), 3)
         result = str(num) + " GB,"
-    else: return data
+    else:
+        return data
     return result
 
-#Report parser: HTMLParser with a few overridden handlers
+
 class ReportParser(HTMLParser):
+    """
+    Report parser: HTMLParser with a few overridden handlers
+    """
+    def __init__(self):
+        super(ReportParser, self).__init__()
+
     def handle_data(self, data):
         global output
         if data not in ["\n", " ", " \n"]:
-           output += data
-           
+            output += data
+
         #every row has 7 elements, so each line of output should have 6 commas,
         #one between each of the 7 fields. Each column endtag results in a comma
         #except for the last one in each row. Since the very last row only has 6 fields,
@@ -47,11 +57,10 @@ class ReportParser(HTMLParser):
                 count += 1
                 r.write(convert(output))
 
-    
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("10.154.128.22") #Establishes Exchange server connection
-mail.login("wmoylan", "MST@42kQsT")
+mail = imaplib.IMAP4_SSL("xxxxxxxx")  # Establishes Exchange server connection
+mail.login("xxxxxx", "xxxxxxx")
 mail.select("inbox")
 typ, data = mail.search(None, '(From "Thomas Alberi")')
 mailList = data[0]
@@ -69,25 +78,25 @@ for latest_msg in text:
                 open(part.get_filename(), 'wb').write(part.get_payload(decode=True))
                 d.append(part.get_filename())
 
-p = ReportParser()            
+p = ReportParser()
 for s in iter(d):
-    files = zipfile.ZipFile(s)  #Fetches the name of the .zip attachment
-    for f in files.namelist():  #Search the archive for the HTML file
+    files = zipfile.ZipFile(s)  # Fetches the name of the .zip attachment
+    for f in files.namelist():  # Search the archive for the HTML file
         if f.rfind(".html") > -1:
-            
+
             #Open the HTML file and create a CSV file with the same name
-            
+
             i = files.open(f, "r")
             r = open("CSVDump\\" + f.replace(".html", ".csv"), "w")
-            
+
             #All of the report files are exactly
             #the same, save for the data in them. The table with the information
             #starts and ends on the same line in every HTML file, which is why
             #hard-coding the line location in the data works.
-            
+
             for line in i:
                 lineCount += 1
-                if lineCount in xrange(70, 436): 
+                if lineCount in xrange(70, 436):
                     output = ""
                     p.feed(line)
             r.close()
