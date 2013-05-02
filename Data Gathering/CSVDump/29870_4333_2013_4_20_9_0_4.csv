@@ -1,0 +1,23 @@
+Volume Full Name,Volume Total Capacity,Volume Used Capacity,Volume Available,Volume Used ,Volume Daily Growth Rate,Volume Days to full
+GRA1AANFL01:/AD01_D_Vol,25.0 GB,12.0 GB,13.0 GB,48%,0 bytes,more than a year
+GRA1AANFL01:/AD02_D_Vol,100 GB,87.2 GB,12.8 GB,87%,0.187 GB,2.3 months
+GRA1AANFL01:/Apps,24.0 GB,15.1 GB,8.90 GB,63%,0.016 GB,more than a year
+GRA1AANFL01:/Ex01_d_vol,125 GB,83.1 GB,41.9 GB,66%,0.102 GB,more than a year
+GRA1AANFL01:/Ex01_e_vol,400 GB,352 GB,48.5 GB,88%,0.41 GB,3.9 months
+GRA1AANFL01:/ISO_Setup_Images,24.0 GB,14.3 GB,9.71 GB,60%,0.031 GB,10.6 months
+GRA1AANFL01:/Profiles,20.0 GB,9.37 GB,10.6 GB,47%,-0.04 GB,more than a year
+GRA1AANFL01:/Redirection,90.0 GB,66.1 GB,23.9 GB,73%,0.032 GB,more than a year
+GRA1AANFL01:/SP01_D_vol,140 GB,100 GB,39.5 GB,72%,0 bytes,more than a year
+GRA1AANFL01:/sq01_d_vol,125 GB,50.2 GB,74.8 GB,40%,0 bytes,more than a year
+GRA1AANFL01:/sq01_e_vol,125 GB,60.3 GB,64.7 GB,48%,0 bytes,more than a year
+GRA1AANFL01:/vol_lookeen_index,20.0 GB,6.06 GB,13.9 GB,30%,-0.001 GB,more than a year
+GRA1AANFL01:/vol0,133 GB,3.73 GB,129 GB,3%,436 KB,more than a year
+GRA1AANFL01:/Wsus,48.0 GB,0.005 GB,48.0 GB,0%,3.00 KB,more than a year
+GRA1AANFL01:/XenStor3,400 GB,302 GB,98.2 GB,75%,-0.031 GB,more than a year
+GRA1AANFL01:/XenStore,600 GB,420 GB,180 GB,70%,0.084 GB,more than a year
+GRA1AANFL02:/vol_Backups,450 GB,386 GB,64.2 GB,86%,0.373 GB,5.7 months
+GRA1AANFL02:/vol_graisdata,1198.08 GB,1064.96 GB,138 GB,89%,1.87 GB,2.4 months
+GRA1AANFL02:/vol_OR01_D,80.0 GB,60.2 GB,19.8 GB,75%,0.018 GB,more than a year
+GRA1AANFL02:/vol0,133 GB,3.33 GB,130 GB,3%,393 KB,more than a year
+GRA1AANFL02:/XenStore2,600 GB,446 GB,154 GB,74%,-0.047 GB,more than a year
+Totals,4864.0 GB,3532.8 GB,1320.96 GB,73%,3.01 GB
