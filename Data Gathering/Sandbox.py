@@ -4,6 +4,7 @@ import zipfile
 import imaplib
 import email
 import os
+from itertools import ifilter
 from HTMLParser import HTMLParser
 
 d = []
@@ -65,11 +66,14 @@ mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connect
 mail.login("DataGathering", "DGmail123!")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
-mailList = data[0]
-text = mailList.split()
-for latest_msg in text:
-    typ, msg = mail.fetch(latest_msg, '(RFC822)')
-    msgtext = email.message_from_string(msg[0][1])
+msgidlist = ','.join(data[0].split())
+#text = mailList.split()
+#for latest_msg in text:
+typ, allmsgs = mail.fetch(msgidlist, '(RFC822)')
+
+# fanciness to filter out the flags strings, every other item on the list.
+for msg in ifilter(lambda x: isinstance(x, tuple), allmsgs):
+    msgtext = email.message_from_string(msg[1])
     if msgtext.is_multipart():
         #print 'multipart'
         #print mail.list()
@@ -77,12 +81,16 @@ for latest_msg in text:
             ctype = part.get_content_type()
             #print ctype
             if ctype == 'application/x-gzip':
-                #print "done"
+                print "done", msg[0]
                 open(part.get_filename(), 'wb').write(part.get_payload(decode=True))
-                mail.copy(latest_msg, "Inbox/Processed")
-                mail.store(latest_msg, '+FLAGS', '\\Deleted')
                 d.append(part.get_filename())
-                mail.expunge()
+
+mail.copy(msgidlist, "Inbox/Processed")
+mail.store(msgidlist, '+FLAGS', '\\Deleted')
+mail.expunge()
+mail.logout()
+
+print "beginning zip processing"
 
 p = ReportParser()
 for s in iter(d):
