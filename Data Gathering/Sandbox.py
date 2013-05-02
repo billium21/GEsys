@@ -3,8 +3,9 @@
 import zipfile
 import imaplib
 import email
-import os
+#import os
 from itertools import ifilter
+from cStringIO import StringIO
 from HTMLParser import HTMLParser
 
 d = []
@@ -82,8 +83,10 @@ for msg in ifilter(lambda x: isinstance(x, tuple), allmsgs):
             #print ctype
             if ctype == 'application/x-gzip':
                 print "done", msg[0]
-                open(part.get_filename(), 'wb').write(part.get_payload(decode=True))
-                d.append(part.get_filename())
+                #open(part.get_filename(), 'wb').write(part.get_payload(decode=True))
+                memfile = StringIO()
+                memfile.write(part.get_payload(decode=True))
+                d.append((part.get_filename(), memfile))  # push file name on list with file
 
 mail.copy(msgidlist, "Inbox/Processed")
 mail.store(msgidlist, '+FLAGS', '\\Deleted')
@@ -93,8 +96,8 @@ mail.logout()
 print "beginning zip processing"
 
 p = ReportParser()
-for s in iter(d):
-    files = zipfile.ZipFile(s)  # Fetches the name of the .zip attachment
+for fname, zfile in iter(d):
+    files = zipfile.ZipFile(zfile)  # Fetches the name of the .zip attachment
     for f in files.namelist():  # Search the archive for the HTML file
         if f.rfind(".html") > -1:
 
@@ -117,4 +120,4 @@ for s in iter(d):
             i.close()
             lineCount = 0
     files.close()
-    os.remove(s)
+    #os.remove(s)
