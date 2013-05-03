@@ -3,7 +3,8 @@
 import zipfile
 import imaplib
 import email
-#import os
+import os
+import datetime
 from itertools import ifilter
 from cStringIO import StringIO
 from HTMLParser import HTMLParser
@@ -31,6 +32,9 @@ def convert(data):
     else:
         return data
 
+def mod_date(filename):
+    t = os.path.getmtime(filename)
+    return datetime.datetime.fromtimestamp(t)
 
 class ReportParser(HTMLParser):
     """
@@ -42,12 +46,10 @@ class ReportParser(HTMLParser):
     def handle_data(self, data):
         global output
         global count
-        global date
-        if lineCount == 25 and data.strip() != "":
-            print data
-            date = data
-            CSV.write(date.strip())
-        elif data not in ["\n", " ", " \n"]:
+        if lineCount == 87:
+            CSV.write(date+ ",")
+            count+=1
+        if data not in ["\n", " ", " \n"]:
             output += data
 
         #every row has 7 elements, so each line of output should have 6 commas,
@@ -65,7 +67,7 @@ class ReportParser(HTMLParser):
                 CSV.write(convert(output) + "\n")
                 count = 1
                 if lineCount != 421:
-                    CSV.write(date.strip() + ",")
+                    CSV.write(date + ",")
             else:
                 output += ","
                 count += 1
@@ -110,12 +112,16 @@ CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
 
 for fname, zfile in iter(d):
     files = zipfile.ZipFile(zfile)  # Fetches the name of the .zip attachment
+    
     for f in files.namelist():  # Search the archive for the HTML file
         if f.rfind(".html") > -1:
 
             #Open the HTML file and create a CSV file with the same name
 
             i = files.open(f, "r")
+            #date = mod_date(fname).strftime("%b %d, %Y")
+            rawDate = files.getinfo(f).date_time
+            date = str(rawDate[1])+"-"+str(rawDate[2])+"-"+str(rawDate[0])
             #All of the report files are exactly
             #the same, save for the data in them. The table with the information
             #starts and ends on the same line in every HTML file, which is why
@@ -124,10 +130,10 @@ for fname, zfile in iter(d):
             for line in i:
                 output = ""
                 lineCount += 1
-                if lineCount == 25: p.feed(line)
                 if lineCount in xrange(87, 422): p.feed(line)
             i.close()
             lineCount = 0
+            count = 0
     files.close()
 CSV.close()
     #os.remove(s)
