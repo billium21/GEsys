@@ -11,6 +11,7 @@ from HTMLParser import HTMLParser
 d = []
 lineCount = 0
 count = 0
+date = ""
 
 
 def convert(data):
@@ -40,7 +41,13 @@ class ReportParser(HTMLParser):
     """
     def handle_data(self, data):
         global output
-        if data not in ["\n", " ", " \n"]:
+        global count
+        global date
+        if lineCount == 25 and data.strip() != "":
+            print data
+            date = data
+            CSV.write(date.strip())
+        elif data not in ["\n", " ", " \n"]:
             output += data
 
         #every row has 7 elements, so each line of output should have 6 commas,
@@ -52,14 +59,17 @@ class ReportParser(HTMLParser):
     def handle_endtag(self, tag):
         global output
         global count
+        #global date
         if tag == "td" or tag == "th":
-            if count == 6 or lineCount == 435:
-                r.write(convert(output) + "\n")
-                count = 0
+            if count == 7: 
+                CSV.write(convert(output) + "\n")
+                count = 1
+                if lineCount != 421:
+                    CSV.write(date.strip() + ",")
             else:
                 output += ","
                 count += 1
-                r.write(convert(output))
+                CSV.write(convert(output))
 
 
 #mail server fetching
@@ -96,6 +106,8 @@ mail.logout()
 print "beginning zip processing"
 
 p = ReportParser()
+CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
+
 for fname, zfile in iter(d):
     files = zipfile.ZipFile(zfile)  # Fetches the name of the .zip attachment
     for f in files.namelist():  # Search the archive for the HTML file
@@ -104,20 +116,18 @@ for fname, zfile in iter(d):
             #Open the HTML file and create a CSV file with the same name
 
             i = files.open(f, "r")
-            r = open("P:\\Administrative\\IT\\Logging\\" + f.replace(".html", ".csv"), "w")
-
             #All of the report files are exactly
             #the same, save for the data in them. The table with the information
             #starts and ends on the same line in every HTML file, which is why
             #hard-coding the line location in the data works.
 
             for line in i:
+                output = ""
                 lineCount += 1
-                if lineCount in xrange(70, 436):
-                    output = ""
-                    p.feed(line)
-            r.close()
+                if lineCount == 25: p.feed(line)
+                if lineCount in xrange(87, 422): p.feed(line)
             i.close()
             lineCount = 0
     files.close()
+CSV.close()
     #os.remove(s)
