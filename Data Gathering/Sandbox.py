@@ -75,8 +75,8 @@ class ReportParser(HTMLParser):
 
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connection
-mail.login("DataGathering", "DGmail123!")
+mail = imaplib.IMAP4_SSL("XXXXXXXXX")  # Establishes Exchange server connection
+mail.login("XXXXXXXXXX", "XXXXXXX")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
 msgidlist = ','.join(data[0].split())
@@ -119,9 +119,10 @@ for fname, zfile in iter(d):
             #Open the HTML file and create a CSV file with the same name
 
             i = files.open(f, "r")
-            #date = mod_date(fname).strftime("%b %d, %Y")
+
             rawDate = files.getinfo(f).date_time
             date = str(rawDate[1])+"-"+str(rawDate[2])+"-"+str(rawDate[0])
+            
             #All of the report files are exactly
             #the same, save for the data in them. The table with the information
             #starts and ends on the same line in every HTML file, which is why
@@ -130,10 +131,9 @@ for fname, zfile in iter(d):
             for line in i:
                 output = ""
                 lineCount += 1
-                if lineCount in xrange(87, 422): p.feed(line)
+                if lineCount in xrange(87, 425):p.feed(line)
             i.close()
             lineCount = 0
             count = 0
     files.close()
 CSV.close()
-    #os.remove(s)
