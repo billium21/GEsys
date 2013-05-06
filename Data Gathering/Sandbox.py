@@ -4,10 +4,11 @@ import zipfile
 import imaplib
 import email
 import os
+import sys
 import datetime
 from itertools import ifilter
 from cStringIO import StringIO
-from HTMLParser import HTMLParser
+from HTMLParser import HTMLParser, HTMLParseError
 
 d = []
 lineCount = 0
@@ -46,9 +47,6 @@ class ReportParser(HTMLParser):
     def handle_data(self, data):
         global output
         global count
-        if lineCount == 87:
-            CSV.write(date+ ",")
-            count+=1
         if data not in ["\n", " ", " \n"]:
             output += data
 
@@ -58,16 +56,22 @@ class ReportParser(HTMLParser):
         #the lineCount keeps track of when the table ends so the last line doesn't have the
         #trailing comma which could throw off the Excel export
 
+    def handle_starttag(self, tag, attrs):
+        if tag == "tr" and ('class', "fc1") in attrs:
+            CSV.write(date + ",")
+        elif tag == "tr" and ('class', "fc2") in attrs:
+            CSV.write(date + ",")
+        elif ('class', "fc3") in attrs:
+            self.error("End File")
+
     def handle_endtag(self, tag):
         global output
         global count
         #global date
         if tag == "td" or tag == "th":
-            if count == 7: 
+            if count == 6: 
                 CSV.write(convert(output) + "\n")
-                count = 1
-                if lineCount != 421:
-                    CSV.write(date + ",")
+                count = 0
             else:
                 output += ","
                 count += 1
@@ -75,8 +79,8 @@ class ReportParser(HTMLParser):
 
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("XXXXXXXXX")  # Establishes Exchange server connection
-mail.login("XXXXXXXXXX", "XXXXXXX")
+mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connection
+mail.login("DataGathering", "DGmail123!")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
 msgidlist = ','.join(data[0].split())
@@ -107,7 +111,6 @@ mail.logout()
 
 print "beginning zip processing"
 
-p = ReportParser()
 CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
 
 for fname, zfile in iter(d):
@@ -117,7 +120,7 @@ for fname, zfile in iter(d):
         if f.rfind(".html") > -1:
 
             #Open the HTML file and create a CSV file with the same name
-
+            p = ReportParser()
             i = files.open(f, "r")
 
             rawDate = files.getinfo(f).date_time
@@ -131,7 +134,10 @@ for fname, zfile in iter(d):
             for line in i:
                 output = ""
                 lineCount += 1
-                if lineCount in xrange(87, 425):p.feed(line)
+                try:
+                    if lineCount in xrange(87, 500):p.feed(line)
+                except HTMLParseError:
+                    break
             i.close()
             lineCount = 0
             count = 0
