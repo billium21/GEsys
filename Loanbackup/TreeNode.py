@@ -1,6 +1,6 @@
 # TreeNode Class
 import os
-
+#from __future__ import print_function
 
 class TreeNode:
 
@@ -59,10 +59,13 @@ class TreeNode:
         else:
             return self.Fname + os.sep
 
-
-#Depth-first traverse the tree and call visit function on each node.
-def df_traverse(root, visit_func):
-    pass
+    #Depth-first traverse the tree and call visit function on each node.
+    def df_traverse(self, visit_func, marked=[]):
+        marked.append(self)
+        visit_func(self)
+        for child in self.lChild:
+            if child not in marked:
+                child.df_traverse(visit_func, marked)
 
 
 if __name__ == '__main__':
@@ -79,10 +82,8 @@ if __name__ == '__main__':
     ##testNode.list_Chldrn()
     ##print testNode3.build_path()
     #print testNode.get_leaves()
-    #print testNode4.build_path()
+    print testNode4.build_path(), '\n'
 
-    print testNode.leaf_names
-    print testNode.child_name_date
-    print testNode.name_date
-    #print testNode.blah
-
+    def vf(x):
+        print x.build_path()
+    testNode.df_traverse(vf)
