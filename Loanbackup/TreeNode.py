@@ -1,4 +1,5 @@
 # TreeNode Class
+import os
 
 class TreeNode:
 
@@ -8,15 +9,15 @@ class TreeNode:
     of seconds since the new epoch, because that's how os.path.getmtime does it.
     """
 
-    def __init__(self, Fname):
+    def __init__(self, Fname, modDate=0):
         self.Parent = None
         self.Fname = Fname
-        self.modDate = 0
+        self.modDate = modDate
         self.leafNode = True
         self.lChild = []
 
-    def newChild(self, Fname):
-        newChild = TreeNode(Fname)
+    def newChild(self, Fname, modDate=0):
+        newChild = TreeNode(Fname, modDate)
         self.lChild.append(newChild)
         self.leafNode = False
         newChild.Parent = self
@@ -33,27 +34,32 @@ class TreeNode:
             return False
 
     def get_leaves(self):
-        result = []
-        for child in self.lChild:
-            if child.leafNode == True:
-                result.append(child.Fname)
-        return result
+        #result = []
+        #for child in self.lChild:
+            #if child.leafNode:
+                #result.append(child.Fname)
+        #return result
+        return [child.Fname for child in self.lChild if child.leafNode]
 
     def build_path(self):
-        if self.Parent == None:
-            return self.Fname + "/"
+        if self.Parent:
+            return self.Parent.build_path() + self.Fname + os.sep
         else:
-            return self.Parent.build_path() + self.Fname + "/"
-        
-testNode = TreeNode("Test")
-testNode2 = testNode.newChild("Test2")
-testNode3 = testNode.newChild("Test3")
-print testNode.lChild
-##testNode.newChild("tChild1")
-##testNode.newChild("tChild2")
-##testNode.newChild("tChild3")
-##
-##testNode.list_Chldrn()
-##print testNode3.build_path()
-print testNode.get_leaves()
-print testNode.build_path()
+            return self.Fname + os.sep
+
+
+if __name__ == '__main__':
+
+    testNode = TreeNode("Test")
+    testNode2 = testNode.newChild("Test2")
+    testNode3 = testNode.newChild("Test3")
+    testNode4 = testNode3.newChild("Test4")
+    print testNode.lChild
+    ##testNode.newChild("tChild1")
+    ##testNode.newChild("tChild2")
+    ##testNode.newChild("tChild3")
+    ##
+    ##testNode.list_Chldrn()
+    ##print testNode3.build_path()
+    print testNode.get_leaves()
+    print testNode4.build_path()
