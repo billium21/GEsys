@@ -50,8 +50,13 @@ class TreeNode:
             return [(child.Fname, child.modDate) for child in self.lChild]
         elif name is 'name_date':
             return (self.Fname, self.modDate)
+        elif name is 'count':
+            return self._count_nodes()
         else:
             raise AttributeError('%s not a valid attribute' % name)
+
+    def __len__(self):
+        return self._count_nodes()
 
     def build_path(self):
         if self.Parent:
@@ -60,12 +65,20 @@ class TreeNode:
             return self.Fname + os.sep
 
     #Depth-first traverse the tree and call visit function on each node.
-    def df_traverse(self, visit_func, marked=[]):
+    def df_traverse(self, visit_func, marked=None):
+        if marked is None:
+            marked = []
         marked.append(self)
         visit_func(self)
         for child in self.lChild:
             if child not in marked:
                 child.df_traverse(visit_func, marked)
+
+    def _count_nodes(self):
+        from itertools import count
+        ct = count()
+        self.df_traverse(lambda x: next(ct))
+        return next(ct)
 
 
 if __name__ == '__main__':
@@ -74,6 +87,8 @@ if __name__ == '__main__':
     testNode2 = testNode.newChild("Test2")
     testNode3 = testNode.newChild("Test3")
     testNode4 = testNode3.newChild("Test4")
+    testNode5 = testNode2.newChild("Test5")
+
     #print testNode.lChild
     ##testNode.newChild("tChild1")
     ##testNode.newChild("tChild2")
