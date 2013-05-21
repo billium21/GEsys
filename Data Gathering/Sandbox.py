@@ -111,6 +111,7 @@ mail.logout()
 
 print "beginning zip processing"
 
+os.system('C:\Python27\Data Gathering\netDriveMap.bat')
 CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
 
 for fname, zfile in iter(d):
