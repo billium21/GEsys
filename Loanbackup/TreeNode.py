@@ -65,15 +65,17 @@ class TreeNode:
             return self.Fname + os.sep
 
     #Depth-first traverse the tree and call visit function on each node.
+    #@profile
     def df_traverse(self, visit_func, marked=None):
         if marked is None:
-            marked = []
-        marked.append(self)
+            marked = {}
+        marked[self] = None
         visit_func(self)
         for child in self.lChild:
             if child not in marked:
                 child.df_traverse(visit_func, marked)
 
+    #@profile
     def _count_nodes(self):
         from itertools import count
         ct = count()
