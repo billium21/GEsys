@@ -1,5 +1,6 @@
 # TreeNode Class
 import os
+import Queue
 #from __future__ import print_function
 
 class TreeNode:
@@ -75,6 +76,22 @@ class TreeNode:
             if child not in marked:
                 child.df_traverse(visit_func, marked)
 
+    def bf_traverse(self, visit_func, marked=None):
+        q = Queue.Queue()
+        if marked is None:
+            marked = {}
+        q.put(self)
+        marked[self] = None
+        visit_func(self)
+        while q.empty() is not True:
+            node = q.get()
+            for child in node.lChild:
+                if child not in marked:
+                    q.put(child)
+                    marked[child] = None
+                    visit_func(child)
+        
+
     #@profile
     def _count_nodes(self):
         from itertools import count
@@ -103,4 +120,5 @@ if __name__ == '__main__':
 
     def vf(x):
         print x.build_path()
+    testNode.bf_traverse(vf)
     testNode.df_traverse(vf)
