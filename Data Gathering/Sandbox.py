@@ -6,6 +6,7 @@ import email
 import os
 import sys
 import datetime
+import psycopg2
 from itertools import ifilter
 from cStringIO import StringIO
 from HTMLParser import HTMLParser, HTMLParseError
@@ -14,22 +15,26 @@ d = []
 lineCount = 0
 count = 0
 date = ""
+conn = psycopg2.connect("ConnectionString")
+cur = conn.cursor()
 
 
 def convert(data):
     if 'TB' in data:
         num = float(data.strip("TB,"))
         num = round((num * 1024), 3)
-        return str(num) + ","
+        return str(num)
     elif 'MB' in data:
         #print data
         num = float(data.strip("MB,"))
         num = round((num / 1024), 3)
-        return str(num) + ","
+        return str(num)
     elif 'GB' in data:
         num = float(data.strip("GB,"))
         num = round(num, 3)
-        return str(num) + ","
+        return str(num)
+    elif 'bytes' in data:
+        return data.strip(" bytes,")
     else:
         return data
 
@@ -38,6 +43,7 @@ def mod_date(filename):
     return datetime.datetime.fromtimestamp(t)
 
 class ReportParser(HTMLParser):
+
     """
     Report parser: HTMLParser with a few overridden handlers
 
@@ -48,8 +54,8 @@ class ReportParser(HTMLParser):
         global output
         global count
         if data not in ["\n", " ", " \n"]:
-            output += data
-
+            output +=convert(data.rstrip("\r\n"))
+            
         #every row has 7 elements, so each line of output should have 6 commas,
         #one between each of the 7 fields. Each column endtag results in a comma
         #except for the last one in each row. Since the very last row only has 6 fields,
@@ -57,30 +63,34 @@ class ReportParser(HTMLParser):
         #trailing comma which could throw off the Excel export
 
     def handle_starttag(self, tag, attrs):
+        global output
         if tag == "tr" and ('class', "fc1") in attrs:
-            CSV.write(date + ",")
+            output+=(date + ",")
         elif tag == "tr" and ('class', "fc2") in attrs:
-            CSV.write(date + ",")
+            output+=(date + ",")
         elif ('class', "fc3") in attrs:
             self.error("End File")
 
     def handle_endtag(self, tag):
         global output
         global count
+        global cur
         #global date
         if tag == "td" or tag == "th":
-            if count == 6: 
-                CSV.write(convert(output) + "\n")
+            if count == 6:
+                output.replace(",", "','")
+                print output
+                #cur.execute(query+output+"');")
+                output = ""
                 count = 0
             else:
                 output += ","
                 count += 1
-                CSV.write(convert(output))
 
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connection
-mail.login("DataGathering", "DGmail123!")
+mail = imaplib.IMAP4_SSL("XXXXXXXX")  # Establishes Exchange server connection
+mail.login("DataGathering", "XXXXXXXXX!")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
 msgidlist = ','.join(data[0].split())
@@ -116,7 +126,7 @@ CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
 
 for fname, zfile in iter(d):
     files = zipfile.ZipFile(zfile)  # Fetches the name of the .zip attachment
-    
+    output = ""
     for f in files.namelist():  # Search the archive for the HTML file
         if f.rfind(".html") > -1:
 
@@ -133,10 +143,10 @@ for fname, zfile in iter(d):
             #hard-coding the line location in the data works.
 
             for line in i:
-                output = ""
                 lineCount += 1
                 try:
-                    if lineCount in xrange(87, 500):p.feed(line)
+                    if lineCount in xrange(87, 500):
+                        p.feed(line)
                 except HTMLParseError:
                     break
             i.close()
