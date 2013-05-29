@@ -92,8 +92,8 @@ class ReportParser(HTMLParser):
 
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("XXX")  # Establishes Exchange server connection
-mail.login("DataGathering", "XXXX")
+mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connection
+mail.login("DataGathering", "DGmail123!")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
 msgidlist = ','.join(data[0].split())
