@@ -26,7 +26,7 @@ def convert(data):
     elif 'MB' in data:
         #print data
         num = float(data.strip("MB,"))
-        num = round((num / 1024), 3)
+        num = round((num/1024), 3)
         return str(num)
     elif 'GB' in data:
         num = float(data.strip("GB,"))
@@ -34,7 +34,7 @@ def convert(data):
         return str(num)
     elif 'KB' in data:
         num = float(data.strip("KB,"))
-        num = round(num * 1024 * 1024, 3)
+        num = round(num/1024/1024, 3)
         return str(num)
     elif 'bytes' in data:
         return data.strip("bytes,")
@@ -79,18 +79,12 @@ class ReportParser(HTMLParser):
         global cur
         #global date
         if tag == "td" or tag == "th":
-            if count == 6: 
-                query = ("INSERT INTO Reports VALUES\
-                ('{Date}', '{vname}', {totalCap}, {usedCap}, \
-                {Available}, {usedPCT}, {growthRT}, \
-                '{DaysToFull}');".format(Date=infoList[0], vname=infoList[1],
-                                       totalCap=infoList[2], usedCap=infoList[3],
-                                       Available=infoList[4], usedPCT=infoList[5],
-                                       growthRT=infoList[6], DaysToFull=infoList[7]))
+            if count == 6
+                query = "INSERT INTO Reports VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
                 count = 0
+                #print query
+                cur.execute(query, infoList)
                 infoList = []
-                print query
-                cur.execute(query)
             else:
                 count += 1
 
