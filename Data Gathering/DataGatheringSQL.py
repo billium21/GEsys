@@ -1,5 +1,4 @@
-
-
+import psycopg2
 import zipfile
 import imaplib
 import email
@@ -15,35 +14,34 @@ d = []
 lineCount = 0
 count = 0
 date = ""
-
-
-
+conn = psycopg2.connect("dbname=datagathering user=postgres password='1234' host=10.2.42.142")
+cur = conn.cursor()
+infoList = []
 
 def convert(data):
     if 'TB' in data:
         num = float(data.strip("TB,"))
         num = round((num * 1024), 3)
-        return str(num) + ","
+        return str(num)
     elif 'MB' in data:
         #print data
         num = float(data.strip("MB,"))
-        num = round((num / 1024), 3)
-        return str(num) + ","
+        num = round((num/1024), 3)
+        return str(num)
     elif 'GB' in data:
         num = float(data.strip("GB,"))
         num = round(num, 3)
-        return str(num) + ","
+        return str(num)
+    elif 'KB' in data:
+        num = float(data.strip("KB,"))
+        num = round(num/1024/1024, 3)
+        return str(num)
     elif 'bytes' in data:
         return data.strip("bytes,")
     else:
         return data
-
-
-def mod_date(filename):
-    t = os.path.getmtime(filename)
-    return datetime.datetime.fromtimestamp(t)
-
-
+    
+#print query
 class ReportParser(HTMLParser):
     """
     Report parser: HTMLParser with a few overridden handlers
@@ -53,10 +51,10 @@ class ReportParser(HTMLParser):
         super(ReportParser, self).__init__()
     """
     def handle_data(self, data):
-        global output
+        global infoList
         global count
-        if data not in ["\n", " ", " \n"]:
-            output += data
+        if data not in ["\n", " ", " \n","\r\n", "%"]:
+            infoList.append(convert(data))
 
 
         #every row has 7 elements, so each line of output should have 6 commas,
@@ -68,32 +66,31 @@ class ReportParser(HTMLParser):
 
     def handle_starttag(self, tag, attrs):
         if tag == "tr" and ('class', "fc1") in attrs:
-            CSV.write(date + ",")
+            infoList.append(Date)
         elif tag == "tr" and ('class', "fc2") in attrs:
-            CSV.write(date + ",")
+            infoList.append(Date)
         elif ('class', "fc3") in attrs:
             self.error("End File")
 
 
     def handle_endtag(self, tag):
-        global output
+        global infoList
         global count
+        global cur
         #global date
         if tag == "td" or tag == "th":
-            if count == 6: 
-                CSV.write(convert(output) + "\n")
+            if count == 6
+                query = "INSERT INTO Reports VALUES (%s, %s, %s, %s, %s, %s, %s, %s)"
                 count = 0
+                #print query
+                cur.execute(query, infoList)
+                infoList = []
             else:
-                output += ","
                 count += 1
-                CSV.write(convert(output))
-
-
-
 
 #mail server fetching
-mail = imaplib.IMAP4_SSL("XXX")  # Establishes Exchange server connection
-mail.login("DataGathering", "XXXX")
+mail = imaplib.IMAP4_SSL("10.154.128.22")  # Establishes Exchange server connection
+mail.login("DataGathering", "DGmail123!")
 mail.select("Inbox")
 typ, data = mail.search(None, 'ALL')
 msgidlist = ','.join(data[0].split())
@@ -124,12 +121,11 @@ mail.store(msgidlist, '+FLAGS', '\\Deleted')
 mail.expunge()
 mail.logout()
 
-
 print "beginning zip processing"
 
 
-os.system('C:\Python27\Data Gathering\netDriveMap.bat')
-CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
+#os.system('C:\Python27\Data Gathering\netDriveMap.bat')
+#CSV = open("P:\\Administrative\\IT\\Logging\\Logging.csv", "a")
 
 
 for fname, zfile in iter(d):
@@ -145,7 +141,7 @@ for fname, zfile in iter(d):
 
 
             rawDate = files.getinfo(f).date_time
-            date = str(rawDate[1])+"-"+str(rawDate[2])+"-"+str(rawDate[0])
+            Date = str(rawDate[1])+"-"+str(rawDate[2])+"-"+str(rawDate[0])
             
             #All of the report files are exactly
             #the same, save for the data in them. The table with the information
@@ -164,4 +160,5 @@ for fname, zfile in iter(d):
             lineCount = 0
             count = 0
     files.close()
-CSV.close()
+    conn.commit()
+    conn.close()

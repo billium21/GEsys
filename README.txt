@@ -1,1 +1,4 @@
-Every day, we get a report from Mindshift detailing the status of our servers in Secaucus. This Python script is designed to reach out to the Exchange server that receives the reports, parse out the data from the .HTML file in the .ZIP archive, and create a CSV containing the data. The idea is to eventually put all the data into a PostGreSQL database and mine the data for trends. 
+This is the Grais and Ellsworth GitHub Repo! We'll be posting our projects here in the spirit of collaboration.
+
+DataGathering is a script for collecting and reporting trends on data we receive from our remote servers.
+LoanBackup is a script to make backing up our files faster.

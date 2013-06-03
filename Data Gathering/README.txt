@@ -2,3 +2,5 @@ Every day, we get a report from Mindshift detailing the status of our servers in
 
 netDriveMap is simply one windows command that maps the network drive using the correct username and password so the script can access the share. Obviously since it contains my password I won't be including it here, but it's of the form:
 net use n: \\domain1\sharename mypassword /USER:domain\username
+
+DataGatheringCSV is the same as the previous Sandbox.py but renames to something more sensible, while DataGatheringSQL forgoes the CSV file entirely and commits the data to the database directly. 
