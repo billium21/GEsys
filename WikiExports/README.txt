@@ -1,0 +1,1 @@
+This script is meant for adding files to our SharePoint Wiki page. The user is prompted for a directory, and each file in it is copied to a singular location so that all the files are in the same place. The script the creates a data file with each line representing a file and the data associated with it, to be pushed to the Wiki.
