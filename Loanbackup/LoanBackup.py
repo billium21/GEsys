@@ -78,14 +78,22 @@ def build_tree_bf(node, path):
 def build_fromdir(node, searchroot):
     import cStringIO
     import subprocess
+    from hashlib import sha1
 
     def _buildnodes(startnode, fullpath, moddate=0):
-        folders = [x for x in fullpath.replace(searchroot, '').split(os.sep) if x != '']
+        wpath = fullpath.replace(searchroot, '')
+        depth = wpath.count(os.sep)
+        pathhash = sha1(wpath).hexdigest()[:20]
+        folders = [x for x in wpath.split(os.sep) if x != '']
         for folder in folders:
             if folder in startnode.child_names:
                 startnode = [x for x in startnode.lChild if x.Fname == folder][0]
             else:
-                startnode = startnode.newChild(Fname=folder, modDate=moddate)
+                depth = fullpath.replace(searchroot, '').count(os.sep)
+                startnode = startnode.newChild(Fname=folder,
+                                               modDate=moddate,
+                                               depth=depth,
+                                               pathhash=pathhash)
 
     dirlist = cStringIO.StringIO()
     if os.sep == '\\':  # check for Windows or linux
@@ -95,9 +103,6 @@ def build_fromdir(node, searchroot):
         p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
         dirlist.write(p.communicate()[0])
     dirlist.seek(0)
-    print 'searchroot:', searchroot
-    #for l in dirlist:
-        #print l.strip()
 
     def diriter():
         """helper function to generate a lazy iterator for the StringIO object"""
@@ -127,8 +132,8 @@ if __name__ == '__main__':
 
     print len(root)
     def vf(x):
-        print x.build_path()
-    #root.df_traverse(vf)
+        print x.build_path(), x.depth, x.pathhash
+    root.df_traverse(vf)
     with open('treepickleBin', 'wb') as fh:
         pickle.dump(root, fh, protocol=2)
     ctime = '%d:%.1f' % divmod(time.time() - starttime, 60)

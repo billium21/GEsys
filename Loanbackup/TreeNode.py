@@ -10,16 +10,18 @@ class TreeNode:
     of seconds since the new epoch, because that's how os.path.getmtime does it.
     """
 
-    def __init__(self, Fname, modDate=0, fullpath=None):
+    def __init__(self, Fname, modDate=0, pathhash=None, depth=0):
         self.Parent = None
         self.Fname = Fname
         self.modDate = modDate
         self.leafNode = True
         self.lChild = []
-        self.fullpath = fullpath
+        #self.fullpath = fullpath
+        self.pathhash = pathhash
+        self.depth = depth
 
-    def newChild(self, Fname, modDate=0, fullpath=None):
-        newChild = TreeNode(Fname, modDate, fullpath)
+    def newChild(self, Fname, modDate=0, pathhash=None, depth=0):
+        newChild = TreeNode(Fname, modDate, pathhash, depth)
         self.lChild.append(newChild)
         self.leafNode = False
         newChild.Parent = self
@@ -62,6 +64,15 @@ class TreeNode:
         return self._count_nodes()
 
     def build_path(self):
+        dirnames = [self.Fname]
+        while self.Parent is not None:
+            self = self.Parent
+            dirnames.append(self.Fname)
+        dirnames.reverse()
+        return os.sep.join(dirnames)
+
+    #much slower than normal build_path
+    def build_path_rec(self):
         if self.Parent:
             #return self.Parent.build_path() + self.Fname + os.sep
             return ''.join((self.Parent.build_path(), self.Fname, os.sep))
