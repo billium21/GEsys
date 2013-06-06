@@ -75,20 +75,29 @@ def build_tree_bf(node, path):
                 queue.appendleft((newnode, newpath))
 
 
-def build_fromdir(node, searchroot, rootpath):
+def build_fromdir(node, searchroot):
     import cStringIO
     import subprocess
 
-    def _buildnodes(startnode, folderlist, moddate=0):
-        for folder in folderlist:
+    def _buildnodes(startnode, fullpath, moddate=0):
+        folders = [x for x in fullpath.replace(searchroot, '').split(os.sep) if x != '']
+        for folder in folders:
             if folder in startnode.child_names:
                 startnode = [x for x in startnode.lChild if x.Fname == folder][0]
             else:
                 startnode = startnode.newChild(Fname=folder, modDate=moddate)
 
     dirlist = cStringIO.StringIO()
-    dirlist.write(subprocess.check_output(['dir', searchroot, '/A:D', '/S', '/B'], shell=True))
+    if os.sep == '\\':  # check for Windows or linux
+        dirlist.write(subprocess.check_output(['dir', searchroot, '/A:D', '/S', '/B'], shell=True))
+    else:
+        cmd = 'find %s -type d' % searchroot
+        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
+        dirlist.write(p.communicate()[0])
     dirlist.seek(0)
+    print 'searchroot:', searchroot
+    #for l in dirlist:
+        #print l.strip()
 
     def diriter():
         """helper function to generate a lazy iterator for the StringIO object"""
@@ -96,10 +105,10 @@ def build_fromdir(node, searchroot, rootpath):
 
     for line in iter(diriter, ''):
             line = line.strip()
-            #moddate = float(os.path.getmtime(line))
-            moddate = 0
-            folders = [x for x in line.replace(rootpath, '').split("\\") if x != '']
-            _buildnodes(node, folders, moddate)
+            if os.path.isdir(line):
+                moddate = float(os.path.getmtime(line))
+                #moddate = 0
+                _buildnodes(node, line, moddate)
 
     #with open(searchroot) as fh:
         #for line in fh:
@@ -112,13 +121,13 @@ if __name__ == '__main__':
     root = TreeNode.TreeNode('root')
     #c = itertools.count()
     #build_tree_bf(root, sys.argv[1])
-    build_fromdir(root, sys.argv[1], 'root:')
+    build_fromdir(root, sys.argv[1])
     ctime = '%d:%.1f' % divmod(time.time() - starttime, 60)
     print 'build complete', ctime
 
     print len(root)
-    #def vf(x):
-        #print x.build_path()
+    def vf(x):
+        print x.build_path()
     #root.df_traverse(vf)
     with open('treepickleBin', 'wb') as fh:
         pickle.dump(root, fh, protocol=2)
