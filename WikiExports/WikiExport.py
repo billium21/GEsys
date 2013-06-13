@@ -1,7 +1,8 @@
 import os
 import shutil
+import re
 
-indir = raw_input("Enter Input Directory: ")
+indir = "C:\\Python27\\WikiExports\\test" #raw_input("Enter Input Directory: ")
 Bates = raw_input("Starting bates number? ")
 outFile = open(indir + "_export.dat", "a")
 dst = "C:\Python27\WikiExports\dataDumps"
@@ -12,6 +13,27 @@ header = '"BEGBATES"|"ENDBATES"|"BEGATTACH"|"ENDATTACH"|\
 "Update Defensive Comments"|"PRODUCEDBY"|"CUSTODIAN"|"COC"|"Docs_PATH"\n'
 
 
+def batesSplit(Bates):
+    result = ""
+    letters = ""
+    setaB = list(Bates)
+    setaB.reverse()
+    print setaB
+    for c in setaB:
+        try: int(c)
+        except ValueError:
+            num = setaB.index(c)
+            digits = setaB[:num]
+            Bates = setaB[num:]
+            digits.reverse()
+            Bates.reverse()
+            for i in digits:
+                result += i
+            for c in Bates:
+                letters += c
+            break
+    return (letters, result)
+            
 print Bates
 outFile.write(header)
 for root, dirs, files in os.walk(indir):
@@ -20,7 +42,7 @@ for root, dirs, files in os.walk(indir):
         shutil.copy(os.path.join(root, File), dst)
         for i in range(0,4):
             dataList.append(Bates)
-        Bates = Bates.split()[0] + " " + str(int(Bates.split()[1]) +1).zfill(len(Bates.split()[1]))
+        Bates = batesSplit(Bates)[0] + str(int(batesSplit(Bates)[1]) +1).zfill(len(batesSplit(Bates)[1]))
         line = ''
         print dataList
         for data in dataList:
