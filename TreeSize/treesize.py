@@ -3,7 +3,7 @@ import os
 import TreeNode
 from collections import deque
 
-@profile
+#@profile
 def build_tree_bf(node, searchpath):
     queue = deque()
     queue.appendleft((node, searchpath))
@@ -57,6 +57,31 @@ def rollup_sizes(node):
             treenode.Parent.datasize += ds
             treenode = treenode.Parent
 
+def jsontree(rootnode):
+    def jsonnode(node):
+        tokens = []
+        tokens.append('{"label":"%s"' % node.Fname)
+        if not node.leafNode:
+            tokens.append(',"children":[')
+            for child in sorted(node.lChild, key=lambda x: x.Fname.lower()):
+                tokens.append(jsonnode(child))
+                tokens.append(',')
+            tokens.pop()  # remove the trailing comma
+            tokens.append(']')
+        tokens.append('}')
+        return ''.join(tokens)
+
+    return '[%s]' % jsonnode(rootnode)
+
+
+def datasize_str(datasize):
+    ln = len(str(datasize))
+    if ln > 9:
+        return '%s GB' % round(datasize / (1024.0**3), 2)
+    elif ln <= 9 and ln > 6:
+        return '%s MB' % round(datasize / (1024.0**2), 2)
+    else:
+        return '%s KB' % round(datasize / 1024.0, 2)
 
 if __name__ == '__main__':
     import sys
@@ -73,7 +98,8 @@ if __name__ == '__main__':
     print 'rollup complete', ctime
 
     print len(root)
-    print root.datasize
+    #print datasize_str(root.datasize)
+    xx = jsontree(root)
 
     def vf(x):
         print x.build_path(), x.datasize, x.depth
