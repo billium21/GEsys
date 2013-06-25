@@ -2,9 +2,10 @@ import os
 import shutil
 import re
 
-indir = "C:\\Python27\\WikiExports\\test" #raw_input("Enter Input Directory: ")
+os.system('C:\Python27\WikiExports\netDriveMap.bat')
+indir = raw_input("Enter Input Directory: ") #"C:\\Python27\\WikiExports\\test"
 Bates = raw_input("Starting bates number? ")
-outFile = open(indir + "_export.dat", "a")
+outFile = open(raw_input(".dat file name: ") + "_export.dat", "w")
 dst = "C:\Python27\WikiExports\dataDumps"
 header = '"BEGBATES"|"ENDBATES"|"BEGATTACH"|"ENDATTACH"|\
 "REVIEWTOOL_ID"|"TO"|"FROM"|"CC"|"BCC"|"TITLE"|"AUTHOR"|\
@@ -12,7 +13,10 @@ header = '"BEGBATES"|"ENDBATES"|"BEGATTACH"|"ENDATTACH"|\
 "Update Offensive Comments"|"Defensive Comments"|\
 "Update Defensive Comments"|"PRODUCEDBY"|"CUSTODIAN"|"COC"|"Docs_PATH"\n'
 
-
+'''
+#batesSplit function divides the Bates number into its numerical
+and alphanumerical (known as the prefix) parts
+'''
 def batesSplit(Bates):
     result = ""
     letters = ""
@@ -41,7 +45,7 @@ for root, dirs, files in os.walk(indir):
         dataList = []
         shutil.copy(os.path.join(root, File), dst)
         for i in range(0,4):
-            dataList.append(Bates)
+            dataList.append('"'+Bates+'"')
         Bates = batesSplit(Bates)[0] + str(int(batesSplit(Bates)[1]) +1).zfill(len(batesSplit(Bates)[1]))
         line = ''
         print dataList
@@ -51,10 +55,10 @@ for root, dirs, files in os.walk(indir):
         #for the other data in the export. All we can get is the file path
         for i in range(0, 5):
             line += '""|'
-        line += File.split(".")[0] + '|""|""|""|'
-        line += os.path.join(root, File) #file path
-        for i in range(0,10):
+        line += '"'+File.split(".")[0]+'"|'
+        for i in range(0,13):
             line += '""|'
+        line += '"' +os.path.join(root, File)+ '"' #file path
         print line.rstrip("|")
         outFile.write(line.rstrip("|") + "\n")
 
