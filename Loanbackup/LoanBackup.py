@@ -5,135 +5,49 @@ import TreeNode
 import time
 import sys
 import cPickle as pickle
-from collections import deque
 
 
-def infoCollect():
-    modTimes = {}
-    print "Start getting Directory Mod times..."
-    for root, dirs, files in os.walk("C:\\"):
-        for name in dirs:
-            modTimes[name] = float((os.path.getmtime(os.path.join(root, name))))
-            print str(modTimes) + "\n"
-    print str(len(modTimes)) + " Directories found"
-    return modTimes
-
-
-def infoCheck(modTimes):
-    for root, dirs, files in os.walk("Path"):
-        pass
-
-#infoCollect()
-
-
-#@profile
-def build_tree(node, path):
-    dirs = None
-    try:
-        dirs = [x for x in sorted(os.listdir(path))
-                if os.path.isdir(os.path.join(path, x))
-                and not os.path.islink(os.path.join(path, x))]
-    except:
-        e = sys.exc_info()[0]
-        print e
-
-    if dirs:
-        for dirx in dirs:
-            newpath = os.path.join(path, dirx)
-            modTime = float(os.path.getmtime(newpath))
-            newnode = node.newChild(dirx, modTime, newpath)
-            build_tree(newnode, newpath)
-
-
-def build_tree_bf(node, path):
-    from itertools import count
-    cnt = count()
-    dirs = None
-    queue = deque()
-
-    queue.appendleft((node, path))
-
-    while len(queue) > 0:
-        qnode, qpath = queue.pop()
-        dirs = None
-        try:
-            dirs = [x for x in sorted(os.listdir(qpath))
-                    if os.path.isdir(os.path.join(qpath, x))
-                    and not os.path.islink(os.path.join(qpath, x))]
-        except:
-            e = sys.exc_info()
-            print e[1].message
-
-        if dirs:
-            for dirx in dirs:
-                newpath = os.path.join(qpath, dirx)
-                #print newpath, newpath.count('/')
-                modTime = float(os.path.getmtime(newpath))
-                newnode = qnode.newChild(dirx, modTime, newpath)
-                if next(cnt) % 1000 == 0:
-                    print cnt, newpath
-                queue.appendleft((newnode, newpath))
-
-
-def build_fromdir(node, searchroot):
-    import cStringIO
+def build_fromdir(searchroot):
     import subprocess
-    from hashlib import sha1
+    from hashlib import md5
 
     def _buildnodes(startnode, fullpath, moddate=0):
         wpath = fullpath.replace(searchroot, '')
         depth = wpath.count(os.sep)
-        pathhash = sha1(wpath).hexdigest()[:20]
+        pathhash = md5(wpath).hexdigest()
         folders = [x for x in wpath.split(os.sep) if x != '']
         for folder in folders:
             if folder in startnode.child_names:
                 startnode = [x for x in startnode.lChild if x.Fname == folder][0]
             else:
-                depth = fullpath.replace(searchroot, '').count(os.sep)
                 startnode = startnode.newChild(Fname=folder,
                                                modDate=moddate,
                                                depth=depth,
                                                pathhash=pathhash)
 
-    dirlist = cStringIO.StringIO()
-    if os.sep == '\\':  # check for Windows or linux
-        dirlist.write(subprocess.check_output(['dir', searchroot, '/A:D', '/S', '/B'], shell=True))
-    else:
-        cmd = 'find %s -type d' % searchroot
-        p = subprocess.Popen(cmd, stdout=subprocess.PIPE, shell=True)
-        dirlist.write(p.communicate()[0])
-    dirlist.seek(0)
+    root = TreeNode.TreeNode('root')
+    proc = subprocess.Popen(['dir', searchroot, '/A:D', '/S', '/B'],
+                            shell=True, stdout=subprocess.PIPE, bufsize=1)
+    for line in iter(proc.stdout.readline, b''):
+        line = line.strip()
+        if os.path.isdir(line):
+            moddate = float(os.path.getmtime(line))
+            _buildnodes(root, line, moddate)
+    proc.communicate()
 
-    def diriter():
-        """helper function to generate a lazy iterator for the StringIO object"""
-        return dirlist.readline()
+    return root
 
-    for line in iter(diriter, ''):
-            line = line.strip()
-            if os.path.isdir(line):
-                moddate = float(os.path.getmtime(line))
-                #moddate = 0
-                _buildnodes(node, line, moddate)
-
-    #with open(searchroot) as fh:
-        #for line in fh:
-            #moddate = float(os.path.getmtime(line))
-            #folders = [x.strip() for x in line.replace(rootpath, '').split("\\") if x != '']
-            #_buildnodes(node, folders, moddate)
 
 if __name__ == '__main__':
     starttime = time.time()
-    root = TreeNode.TreeNode('root')
-    #c = itertools.count()
-    #build_tree_bf(root, sys.argv[1])
-    build_fromdir(root, sys.argv[1])
+    root = build_fromdir(sys.argv[1])
     ctime = '%d:%.1f' % divmod(time.time() - starttime, 60)
     print 'build complete', ctime
 
     print len(root)
     def vf(x):
         print x.build_path(), x.depth, x.pathhash
-    root.df_traverse(vf)
+    #root.df_traverse(vf)
     with open('treepickleBin', 'wb') as fh:
         pickle.dump(root, fh, protocol=2)
     ctime = '%d:%.1f' % divmod(time.time() - starttime, 60)
