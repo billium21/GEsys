@@ -3,14 +3,14 @@
 import os
 import os.path
 import TreeNode
+import subprocess
 
 
 def build_fromdir(searchroot):
-    import subprocess
     from hashlib import md5
 
     def _buildnodes(startnode, fullpath, moddate=0):
-        wpath = fullpath.replace(searchroot, '')
+        wpath = fullpath.replace(searchroot, '').lstrip(os.sep)
         depth = wpath.count(os.sep)
         pathhash = md5(wpath).hexdigest()
         folders = [x for x in wpath.split(os.sep) if x != '']
@@ -109,9 +109,11 @@ def copy_newfolder(treepath, sourceroot, destroot):
                              treepath.replace('root', '').strip(os.sep))
     copy_to = os.path.join(destroot.strip(os.sep),
                              treepath.replace('root', '').strip(os.sep))
-    roboargs = [copy_from, copy_to, '/COPY:DAT', '/E', '/MT:8', '/W:1', '/R:5', '/NFL', 'NDL']
-
-
+    roboargs = [copy_from, copy_to, '/COPY:DAT', '/E', '/MT:8',
+                '/W:1', '/R:5', '/NFL', 'NDL', '/NJH']
+    proc = subprocess.Popen(roboargs, stdout=subprocess.PIPE, shell=True)
+    out = proc.communicate()[0]
+    return (out, proc.returncode)
 
 
 if __name__ == '__main__':
