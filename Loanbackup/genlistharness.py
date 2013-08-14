@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import TreeNode
-import LoanBackup
+import folderops
 
 if __name__ == '__main__':
     import sys
@@ -17,7 +17,7 @@ if __name__ == '__main__':
 
     uptime = '%d:%.1f' % divmod(time.time() - starttime, 60)
 
-    new, dell, diff = LoanBackup.gen_changelist(base, compare)
+    new, dell, diff = folderops.gen_changelist(base, compare)
 
     ctime = '%d:%.1f' % divmod(time.time() - starttime, 60)
 
