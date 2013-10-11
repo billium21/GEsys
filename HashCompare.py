@@ -2,8 +2,11 @@ import hashlib
 import subprocess
 import os
 
-source = raw_input("Source Directory: ")
-backup = raw_input("Backup Directory: ")
+
+#This assumes that the two directories supplied are supposed
+#to be copies of each other
+#source = raw_input("Source Directory: ")
+#backup = raw_input("Backup Directory: ")
 
 def hashtag(filename):
     result = {}
@@ -23,17 +26,27 @@ def hashtag(filename):
     proc.communicate()
     return result
 
-sourcetag = hashtag(source)
-backuptag = hashtag(backup)
+def DirCompare(source, backup):
+    
+    #Build Dictionaries of MD5 hashes
+    sourcetag = hashtag(source)
+    backuptag = hashtag(backup)
 
-mismatch = []
-for key in source.keys():
-    if key not in backup.keys():
-        mismatch.append(source[key])
+
+    #look for matching MD5's.
+    mismatch = []
+    matchlog = open("MatchLog.txt", "w")
+    for key in sourcetag.keys():
+        if key not in backuptag.keys():
+            mismatch.append(sourcetag[key])
+        else:
+            matchlog.write(sourcetag[key] + " MATCH")
+
+    if len(mismatch) > 0:
+        print str(len(mismatch)) + " mismatches!"
+        for x in mismatch:
+            print x
     else:
-        print source[key] + " MATCH"
+        print source + " equals " + backup
 
-if len(mismatch) > 0:
-    print len(mismatch) + " mismatches!"
-    for x in mismatches:
-        print x + "\n"
+    print "DONE! Match Log created in program directory. Move it out as the next compare will overwrite it!"
